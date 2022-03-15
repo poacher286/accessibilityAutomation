@@ -19,7 +19,6 @@ import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeSuite;
 
 import java.io.File;
-import java.io.IOException;
 
 public class TestBase extends AbstractTestNGCucumberTests {
 

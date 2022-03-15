@@ -36,7 +36,7 @@ public class PageStepDef extends TestBase {
 
         for (Rule r : analyze.getViolations()) {
             test.get().log(Status.INFO,formatString("RULE : "+r.getId(), "black"));
-            test.get().log(Status.INFO, "Description = "+ formatString(r.getDescription(), "blue"));
+            test.get().log(Status.INFO, "Description = "+ formatTextArea(r.getDescription()));
             test.get()
                     .log(Status.INFO, "Impact = " + formatString(r.getImpact(),
                                                                  r.getImpact().equals("critical") ? "red" : "orange"));
@@ -47,7 +47,7 @@ public class PageStepDef extends TestBase {
         test.get().log(Status.INFO,formatString("Incomplete list size : "+analyze.getIncomplete().size(), "green"));
         for (Rule r : analyze.getIncomplete()) {
             test.get().log(Status.INFO,formatString("RULE : "+r.getId(), "black"));
-            test.get().log(Status.INFO, "Description = "+ formatString(r.getDescription(), "blue"));
+            test.get().log(Status.INFO, "Description = "+ formatTextArea(r.getDescription()));
             test.get()
                     .log(Status.INFO, "Impact = " + formatString(r.getImpact(),
                                                                  r.getImpact().equals("critical") ? "red" : "orange"));

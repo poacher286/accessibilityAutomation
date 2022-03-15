@@ -43,4 +43,8 @@ public class Utility {
     public static String formatString(String sString, String color){
         return "<b style='color:"+color+"'>"+sString+"</b>";
     }
+
+    public static String formatTextArea(String sString){
+        return "<textarea rows='20' cols='40' style='border:none;'>"+sString+"</textarea>";
+    }
 }

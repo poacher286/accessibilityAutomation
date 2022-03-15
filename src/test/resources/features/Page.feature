@@ -10,4 +10,4 @@ Feature: Accessibility
       | site     |
       | google   |
       | tdBank   |
-#      | cricbuzz |
+      | cricbuzz |
