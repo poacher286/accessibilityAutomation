@@ -2,9 +2,12 @@ package com.accessibility.stepDef;
 
 import com.accessibility.base.TestBase;
 import com.aventstack.extentreports.Status;
+import com.deque.html.axecore.axeargs.AxeRunOnlyOptions;
+import com.deque.html.axecore.axeargs.AxeRunOptions;
 import com.deque.html.axecore.results.Results;
 import com.deque.html.axecore.results.Rule;
 import com.deque.html.axecore.selenium.AxeBuilder;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -13,13 +16,43 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import static com.accessibility.utils.Utility.*;
+import static com.accessibility.utils.Utility.formatString;
+import static com.accessibility.utils.Utility.formatTextArea;
 
 public class PageStepDef extends TestBase {
 
+    private Results analyze;
+
     private String site;
+
+    /**
+     * return default Result
+     * @return
+     */
+    private Results getAnalyze(){
+        return new AxeBuilder().analyze(driver);
+    }
+
+    /**
+     * return Result with particular tags
+     * @param tags
+     * @return
+     */
+    private Results getAnalyze(List<String> tags) {
+        AxeRunOnlyOptions runOnlyOptions = new AxeRunOnlyOptions();
+        runOnlyOptions.setType("tag");
+        runOnlyOptions.setValues(tags);
+
+        AxeRunOptions options = new AxeRunOptions();
+        options.setRunOnly(runOnlyOptions);
+        return new AxeBuilder()
+                .withOptions(options)
+                .analyze(driver);
+    }
 
     @Given("I navigate to {string}")
     public void iNavigateToUrl(String site) {
@@ -30,8 +63,14 @@ public class PageStepDef extends TestBase {
     }
 
     @When("I run axe tool")
-    public void iRunAxeTool() {
-        Results analyze = new AxeBuilder().analyze(driver);
+    public void iRunAxeTool(DataTable dataTable) {
+        List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
+        List<String> tags = new ArrayList<>();
+        for (Map<String, String> col: rows){
+            tags.add(col.get("tag"));
+        }
+
+        analyze = getAnalyze(tags);
         test.get().log(Status.INFO, formatString("Violation list size : "+analyze.getViolations().size(), "green"));
 
         for (Rule r : analyze.getViolations()) {
@@ -39,8 +78,10 @@ public class PageStepDef extends TestBase {
             test.get().log(Status.INFO, "Description = "+ formatTextArea(r.getDescription()));
             test.get()
                     .log(Status.INFO, "Impact = " + formatString(r.getImpact(),
-                                                                 r.getImpact().equals("critical") ? "red" : "orange"));
-            test.get().log(Status.INFO,"Tags = "+r.getTags());
+                                                                 r.getImpact().equals("critical") ? "red"  :
+                                                                         r.getImpact().equals("serious") ? "orange":
+                                                                                 "green"));
+            test.get().log(Status.INFO,"Guideline violated = "+r.getTags());
             test.get().log(Status.INFO,"Help Url = "+r.getHelpUrl());
         }
 
@@ -50,8 +91,10 @@ public class PageStepDef extends TestBase {
             test.get().log(Status.INFO, "Description = "+ formatTextArea(r.getDescription()));
             test.get()
                     .log(Status.INFO, "Impact = " + formatString(r.getImpact(),
-                                                                 r.getImpact().equals("critical") ? "red" : "orange"));
-            test.get().log(Status.INFO,"Tags = "+r.getTags());
+                                                                 r.getImpact().equals("critical") ? "red"  :
+                                                                  r.getImpact().equals("serious") ? "orange":
+                                                                  "green"));
+            test.get().log(Status.INFO,"Guideline violated = "+r.getTags());
             test.get().log(Status.INFO,"Help Url = "+r.getHelpUrl());
         }
 //        HashSet<String> expecteds = new HashSet<>(Arrays.asList("aria-required-attr",
@@ -64,7 +107,6 @@ public class PageStepDef extends TestBase {
 
     @Then("I should get report")
     public void iShouldGetReport() throws IOException {
-        System.out.println("report");
 
         //JSON report file
         File jsonReportFile = new File("./reports/Run_" + START_TIME + "_" + this.site + "_Report.json");

@@ -64,6 +64,12 @@
             <artifactId>extentreports</artifactId>
             <version>3.1.5</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.codoid.products</groupId>
+            <artifactId>fillo</artifactId>
+            <version>1.21</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

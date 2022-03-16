@@ -4,10 +4,13 @@ Feature: Accessibility
 
     Given I navigate to "<site>"
     When I run axe tool
+      | tag     |
+      | wcag2aa |
+      | wcag143 |
     Then I should get report
 
     Examples:
-      | site     |
-      | google   |
+      | site   |
+      | google |
       | tdBank   |
       | cricbuzz |

@@ -4,7 +4,6 @@ import com.deque.html.axecore.results.Results;
 import com.deque.html.axecore.results.Rule;
 import org.testng.Assert;
 
-import java.util.Arrays;
 import java.util.HashSet;
 
 public class Utility {
