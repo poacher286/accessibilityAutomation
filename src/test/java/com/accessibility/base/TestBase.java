@@ -4,7 +4,7 @@ package com.accessibility.base;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
-import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.JavascriptExecutor;
@@ -23,19 +23,29 @@ import java.io.File;
 public class TestBase extends AbstractTestNGCucumberTests {
 
     public static final long START_TIME = System.currentTimeMillis();
+    public static final String REPORT_DIR = "./reports/Run_" + START_TIME;
+    public static final String SCREENSHOT_DIR = REPORT_DIR+"/screenshots";
 
     public static final ThreadLocal<ExtentTest> test = new ThreadLocal<>();
     public static ExtentReports report;
-    public static ExtentHtmlReporter reporter;
+    public static ExtentSparkReporter reporter;
 
     public static WebDriver driver;
     public static JavascriptExecutor jse;
 
 
     static {
-        File theDir = new File("./reports");
-        if (!theDir.exists()) {
-            boolean mkdir = theDir.mkdir();
+        File reportDir = new File(REPORT_DIR);
+        if (!reportDir.exists()) {
+            boolean mkdir = reportDir.mkdir();
+            if (!mkdir) {
+                System.out.println("Directory creation failed.");
+            }
+        }
+
+        File screenshotdir = new File(SCREENSHOT_DIR);
+        if (!screenshotdir.exists()) {
+            boolean mkdir = screenshotdir.mkdir();
             if (!mkdir) {
                 System.out.println("Directory creation failed.");
             }
@@ -44,7 +54,7 @@ public class TestBase extends AbstractTestNGCucumberTests {
 
     @BeforeSuite
     public void startReport() {
-        reporter = new ExtentHtmlReporter("./reports/Run_" + START_TIME + "_Report.html");
+        reporter = new ExtentSparkReporter(REPORT_DIR + "/Report.html");
         report = new ExtentReports();
         report.attachReporter(reporter);
 

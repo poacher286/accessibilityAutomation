@@ -1,6 +1,6 @@
 Feature: Accessibility
 
-  Scenario Outline: Axe tool automation <site>
+  Scenario Outline: Axe tool automation for <site>
 
     Given I navigate to "<site>"
     When I run axe tool

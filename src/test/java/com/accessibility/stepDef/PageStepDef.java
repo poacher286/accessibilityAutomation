@@ -1,9 +1,11 @@
 package com.accessibility.stepDef;
 
 import com.accessibility.base.TestBase;
+import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
 import com.deque.html.axecore.axeargs.AxeRunOnlyOptions;
 import com.deque.html.axecore.axeargs.AxeRunOptions;
+import com.deque.html.axecore.results.Node;
 import com.deque.html.axecore.results.Results;
 import com.deque.html.axecore.results.Rule;
 import com.deque.html.axecore.selenium.AxeBuilder;
@@ -11,7 +13,11 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
+import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.WebElement;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -20,8 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static com.accessibility.utils.Utility.formatString;
-import static com.accessibility.utils.Utility.formatTextArea;
+import static com.accessibility.utils.Utility.*;
 
 public class PageStepDef extends TestBase {
 
@@ -63,7 +68,7 @@ public class PageStepDef extends TestBase {
     }
 
     @When("I run axe tool")
-    public void iRunAxeTool(DataTable dataTable) {
+    public void iRunAxeTool(DataTable dataTable) throws IOException {
         List<Map<String, String>> rows = dataTable.asMaps(String.class, String.class);
         List<String> tags = new ArrayList<>();
         for (Map<String, String> col: rows){
@@ -71,32 +76,10 @@ public class PageStepDef extends TestBase {
         }
 
         analyze = getAnalyze(tags);
-        test.get().log(Status.INFO, formatString("Violation list size : "+analyze.getViolations().size(), "green"));
 
-        for (Rule r : analyze.getViolations()) {
-            test.get().log(Status.INFO,formatString("RULE : "+r.getId(), "black"));
-            test.get().log(Status.INFO, "Description = "+ formatTextArea(r.getDescription()));
-            test.get()
-                    .log(Status.INFO, "Impact = " + formatString(r.getImpact(),
-                                                                 r.getImpact().equals("critical") ? "red"  :
-                                                                         r.getImpact().equals("serious") ? "orange":
-                                                                                 "green"));
-            test.get().log(Status.INFO,"Guideline violated = "+r.getTags());
-            test.get().log(Status.INFO,"Help Url = "+r.getHelpUrl());
-        }
+        this.printViolation();
 
-        test.get().log(Status.INFO,formatString("Incomplete list size : "+analyze.getIncomplete().size(), "green"));
-        for (Rule r : analyze.getIncomplete()) {
-            test.get().log(Status.INFO,formatString("RULE : "+r.getId(), "black"));
-            test.get().log(Status.INFO, "Description = "+ formatTextArea(r.getDescription()));
-            test.get()
-                    .log(Status.INFO, "Impact = " + formatString(r.getImpact(),
-                                                                 r.getImpact().equals("critical") ? "red"  :
-                                                                  r.getImpact().equals("serious") ? "orange":
-                                                                  "green"));
-            test.get().log(Status.INFO,"Guideline violated = "+r.getTags());
-            test.get().log(Status.INFO,"Help Url = "+r.getHelpUrl());
-        }
+        this.printIncomplete();
 //        HashSet<String> expecteds = new HashSet<>(Arrays.asList("aria-required-attr",
 //                                                  "region",
 //                                                  "color-contrast",
@@ -109,7 +92,7 @@ public class PageStepDef extends TestBase {
     public void iShouldGetReport() throws IOException {
 
         //JSON report file
-        File jsonReportFile = new File("./reports/Run_" + START_TIME + "_" + this.site + "_Report.json");
+        File jsonReportFile = new File(REPORT_DIR + "/Run_" + START_TIME + "_" + this.site + "_Report.json");
         try {
             boolean newFile = jsonReportFile.createNewFile();
             if (newFile) {
@@ -129,5 +112,58 @@ public class PageStepDef extends TestBase {
         writer.write(s);
         writer.flush();
         writer.close();
+    }
+
+    public void printViolation() throws IOException {
+        test.get().log(Status.INFO, formatString("Violation list size : "+analyze.getViolations().size(), "green"));
+
+        for (Rule r : analyze.getViolations()) {
+            this.logAndAddScreenshot(r);
+        }
+
+    }
+
+    public void printIncomplete() throws IOException {
+        test.get().log(Status.INFO, formatString("Incomplete list size : "+analyze.getIncomplete().size(), "green"));
+
+        for (Rule r : analyze.getIncomplete()) {
+            this.logAndAddScreenshot(r);
+        }
+
+    }
+
+    private void logAndAddScreenshot(Rule r) throws IOException {
+        test.get().log(Status.INFO,formatString("RULE : "+r.getId(), "black"));
+        test.get().log(Status.INFO, "Description = "+ formatTextArea(r.getDescription()));
+        test.get()
+                .log(Status.INFO, "Impact = " + formatString(r.getImpact(),
+                                                             r.getImpact().equals("critical") ? "red"  :
+                                                                     r.getImpact().equals("serious") ? "orange":
+                                                                             "green"));
+        test.get().log(Status.INFO,"Guideline violated = "+r.getTags());
+        test.get().log(Status.INFO,"Help Url = "+r.getHelpUrl());
+
+
+        for (Node nodes : r.getNodes()){
+            String html = nodes.getHtml();
+            System.out.println(html);
+            String generatedXpath = createXpathFromHTML(html);
+            if (!driver.findElements(By.xpath(generatedXpath)).isEmpty()) {
+                WebElement element = driver.findElement(By.xpath(generatedXpath));
+                File screenshotAs = element.getScreenshotAs(OutputType.FILE);
+                String fileName = site + "_" + element.getText().replaceAll("[\\s+,.'\"?/]", "") + ".png";
+                String destination = SCREENSHOT_DIR + "/" + fileName;
+                File finalDestination = new File(destination);
+                FileUtils.copyFile(screenshotAs, finalDestination);
+                test.get()
+                        .info(fileName,
+                              MediaEntityBuilder
+                                      .createScreenCaptureFromPath("./screenshots/" + fileName)
+                                      .build());
+            }else{
+                test.get()
+                        .info("Can not able to find html : " + formatTextArea(html));
+            }
+        }
     }
 }

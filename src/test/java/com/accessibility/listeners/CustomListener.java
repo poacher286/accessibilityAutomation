@@ -16,7 +16,8 @@ public class CustomListener extends TestBase implements ITestListener {
         scenarioName = Arrays.stream(result.getParameters())
                 .findFirst()
                 .orElse("null")
-                .toString();
+                .toString()
+                .replaceAll("\"", "");
         test.set(report.createTest(scenarioName));
         test.get()
                 .log(Status.INFO, scenarioName + " Has Started");
