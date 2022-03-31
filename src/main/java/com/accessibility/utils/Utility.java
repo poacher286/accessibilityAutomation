@@ -54,7 +54,7 @@ public class Utility {
     public static String createXpathFromHTML(String html){
         String xpath = "";
         String substring = html.substring(html.indexOf('<')+1, html.indexOf('>'));
-        if (substring.split("\"\\s+").length!=1) {
+        if (substring.split("\\s+").length!=1) {
 
             String tag = substring.substring(0, substring.indexOf(" "));
 
