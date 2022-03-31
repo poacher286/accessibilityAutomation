@@ -148,21 +148,25 @@ public class PageStepDef extends TestBase {
             String html = nodes.getHtml();
             System.out.println(html);
             String generatedXpath = createXpathFromHTML(html);
-            if (!driver.findElements(By.xpath(generatedXpath)).isEmpty()) {
+            if (!generatedXpath.equals("") && !driver.findElements(By.xpath(generatedXpath)).isEmpty()) {
                 WebElement element = driver.findElement(By.xpath(generatedXpath));
-                File screenshotAs = element.getScreenshotAs(OutputType.FILE);
-                String fileName = site + "_" + element.getText().replaceAll("[\\s+,.'\"?/]", "") + ".png";
-                String destination = SCREENSHOT_DIR + "/" + fileName;
-                File finalDestination = new File(destination);
-                FileUtils.copyFile(screenshotAs, finalDestination);
-                test.get()
-                        .info(fileName,
-                              MediaEntityBuilder
-                                      .createScreenCaptureFromPath("./screenshots/" + fileName)
-                                      .build());
+                try {
+
+                    File screenshotAs = element.getScreenshotAs(OutputType.FILE);
+                    String fileName = site + "_" + element.getText()
+                            .replaceAll("[\\s+,.'\"?/]", "") + ".png";
+                    String destination = SCREENSHOT_DIR + "/" + fileName;
+                    File finalDestination = new File(destination);
+                    FileUtils.copyFile(screenshotAs, finalDestination);
+                    test.get()
+                            .info(fileName, MediaEntityBuilder.createScreenCaptureFromPath("./screenshots/" + fileName)
+                                    .build());
+                }catch (Exception | Error e){
+                    System.out.println("Error : " +e.getMessage());
+                }
             }else{
                 test.get()
-                        .info("Can not able to find html : " + formatTextArea(html));
+                        .info("Can not able to find element. reference HTML : " + formatTextArea(html));
             }
         }
     }

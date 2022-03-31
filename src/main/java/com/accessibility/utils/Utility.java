@@ -52,22 +52,26 @@ public class Utility {
     }
 
     public static String createXpathFromHTML(String html){
-        String xpath;
+        String xpath = "";
         String substring = html.substring(html.indexOf('<')+1, html.indexOf('>'));
-        String tag = substring.substring(0, substring.indexOf(" "));
+        if (substring.split("\"\\s+").length!=1) {
 
-        String newSubstring = substring.substring(tag.length()).trim();
+            String tag = substring.substring(0, substring.indexOf(" "));
 
-        String[] pairs = newSubstring.split("\"\\s+");
+            String newSubstring = substring.substring(tag.length())
+                    .trim();
 
-        String collect = Arrays.stream(pairs)
-                .filter(e -> !(e.startsWith("ping")||e.startsWith("html")))
-                .map(e -> e.replaceAll("amp;", ""))
-                .map(e -> e = "@" + e)
-                .collect(Collectors.joining("\" and ", "[", "]"));
-        xpath = "//" + tag + collect;
-        if (xpath.charAt(xpath.length()-2)!='"'){
-            xpath = xpath.substring(0, xpath.length()-1)+"\"]";
+            String[] pairs = newSubstring.split("\"\\s+");
+
+            String collect = Arrays.stream(pairs)
+                    .filter(e -> !(e.startsWith("ping") || e.startsWith("html")))
+                    .map(e -> e.replaceAll("amp;", ""))
+                    .map(e -> e = "@" + e)
+                    .collect(Collectors.joining("\" and ", "[", "]"));
+            xpath = "//" + tag + collect;
+            if (xpath.charAt(xpath.length() - 2) != '"') {
+                xpath = xpath.substring(0, xpath.length() - 1) + "\"]";
+            }
         }
 
         System.out.println("generatedxpath = "+xpath);
