@@ -10,6 +10,7 @@ import com.deque.html.axecore.results.Results;
 import com.deque.html.axecore.results.Rule;
 import com.deque.html.axecore.selenium.AxeBuilder;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -63,8 +64,8 @@ public class PageStepDef extends TestBase {
     public void iNavigateToUrl(String site) {
         this.site = site;
         driver.get(System.getProperty(site));
-        test.get()
-                .log(Status.INFO, "Chrome started with url : " + site);
+        this.acceptCookies();
+        test.get().log(Status.INFO, "Chrome started with url : " + System.getProperty(site));
     }
 
     @When("I run axe tool")
@@ -169,5 +170,11 @@ public class PageStepDef extends TestBase {
                         .info("Can not able to find element. reference HTML : " + formatTextArea(html));
             }
         }
+    }
+
+    @And("I clear cache")
+    public void iClearCache() {
+        driver.manage().deleteAllCookies();
+        jse.executeScript("window.localStorage.clear();");
     }
 }
